@@ -11,26 +11,22 @@ describe('Get GeoCode Address', () => {
 
   const handlers = [
     // Intercept "GET 'https://maps.googleapis.com/maps/api/geocode" requests...
-    http.get(
-      'https://maps.googleapis.com/maps/api/geocode/json?key-test&address=1600+Amphitheatre+Parkway,+Mountain+View,+CA',
-      () => {
-        // ...and respond to them using this JSON response.
-        return HttpResponse.json([
+    http.get('https://maps.googleapis.com/maps/api/geocode/json', () => {
+      // ...and respond to them using this JSON response.
+      return HttpResponse.json({
+        results: [
           {
-            results: [
-              {
-                geometry: {
-                  location: {
-                    lat: 37.4224082,
-                    lng: -122.0856086,
-                  },
-                },
+            geometry: {
+              location: {
+                lat: 37.4224082,
+                lng: -122.0856086,
               },
-            ],
+            },
           },
-        ]);
-      },
-    ),
+        ],
+        status: 'OK',
+      });
+    }),
   ];
 
   beforeAll(() => {

@@ -1,36 +1,16 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
-import { AppModule } from '../src/app.module';
-import { http, HttpResponse } from 'msw';
+import { Test, TestingModule } from '@nestjs/testing';
 import { setupServer, SetupServerApi } from 'msw/node';
+import * as request from 'supertest';
+import { stubGoogleAPIResponse } from '../src/address/application/test/google-geocode-mock.handler';
+import { AppModule } from '../src/app.module';
 
 describe('Get GeoCode Address', () => {
   let app: INestApplication;
   let mockServer: SetupServerApi;
 
-  const handlers = [
-    // Intercept "GET 'https://maps.googleapis.com/maps/api/geocode" requests...
-    http.get('https://maps.googleapis.com/maps/api/geocode/json', () => {
-      // ...and respond to them using this JSON response.
-      return HttpResponse.json({
-        results: [
-          {
-            geometry: {
-              location: {
-                lat: 37.4224082,
-                lng: -122.0856086,
-              },
-            },
-          },
-        ],
-        status: 'OK',
-      });
-    }),
-  ];
-
   beforeAll(() => {
-    mockServer = setupServer(...handlers);
+    mockServer = setupServer();
     mockServer.listen();
   });
 
@@ -43,11 +23,27 @@ describe('Get GeoCode Address', () => {
       imports: [AppModule],
     }).compile();
 
+    mockServer.resetHandlers();
     app = moduleFixture.createNestApplication();
     await app.init();
   });
 
   it('returns the latitude/longitude for a given address', () => {
+    mockServer.use(
+      stubGoogleAPIResponse({
+        results: [
+          {
+            geometry: {
+              location: {
+                lat: 37.4224082,
+                lng: -122.0856086,
+              },
+            },
+          },
+        ],
+      }),
+    );
+
     return request(app.getHttpServer())
       .get(
         '/addresses/geo-code?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA',

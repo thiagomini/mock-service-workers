@@ -54,4 +54,8 @@ describe('Get GeoCode Address', () => {
         longitude: -122.0856086,
       });
   });
+
+  it.todo('returns a 404 error when the address is not found');
+  it.todo('returns a 424 error (code=01) when there is a network error');
+  it.todo('returns a 424 error (code=02) when the API key is invalid');
 });

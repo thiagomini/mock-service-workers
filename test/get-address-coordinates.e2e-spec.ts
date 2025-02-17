@@ -56,7 +56,23 @@ describe('Get GeoCode Address', () => {
       });
   });
 
-  it.todo('returns a 404 error when the address is not found');
+  it('returns a 404 error when the address is not found', async () => {
+    mockServer.use(
+      stubGoogleAPIResponse({
+        results: [],
+        status: 'ZERO_RESULTS',
+      }),
+    );
+
+    return request(app.getHttpServer())
+      .get('/addresses/geo-code?address=invalid+address')
+      .expect(404)
+      .expect({
+        statusCode: 404,
+        message: 'Address not found',
+        error: 'Not Found',
+      });
+  });
   it.todo('returns a 424 error (code=01) when there is a network error');
   it.todo('returns a 424 error (code=02) when the API key is invalid');
 });

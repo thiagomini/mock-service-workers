@@ -1,6 +1,9 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Query } from '@nestjs/common';
 import { Coordinates } from './domain/coordinates';
-import { AddressService } from './application/address.service';
+import {
+  AddressService,
+  GeoLocationErrorCode,
+} from './application/address.service';
 
 @Controller('addresses')
 export class AddressController {
@@ -14,6 +17,8 @@ export class AddressController {
       return result.value;
     }
 
-    throw result.error;
+    if (result.error.code === GeoLocationErrorCode.AddressNotFound) {
+      throw new NotFoundException('Address not found');
+    }
   }
 }

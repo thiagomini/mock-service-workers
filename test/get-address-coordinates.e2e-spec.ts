@@ -77,6 +77,7 @@ describe('Get GeoCode Address', () => {
       stubGoogleAPIResponse({
         results: [],
         status: 'REQUEST_DENIED',
+        error_message: 'The provided API key is invalid.',
       }),
     );
 
@@ -86,6 +87,7 @@ describe('Get GeoCode Address', () => {
       .expect({
         statusCode: 424,
         message: 'Failed to get coordinates',
+        code: '01',
       });
   });
   it.todo('returns a 424 error (code=02) when there is a network error');

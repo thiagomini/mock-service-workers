@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Coordinates } from '../domain/coordinates';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
@@ -15,6 +15,7 @@ export type GoogleGeocodeResponse = {
     };
   }[];
   status: string;
+  error_message?: string;
 };
 
 export const GeoLocationErrorCode = {
@@ -43,6 +44,7 @@ export class UnknownGeolocationError extends ApplicationError {
 
 @Injectable()
 export class AddressService {
+  private readonly logger = new Logger(AddressService.name);
   constructor(private readonly httpService: HttpService) {}
 
   async getGeoCode(
@@ -55,6 +57,9 @@ export class AddressService {
     );
 
     if (response.data.status !== 'OK') {
+      this.logger.error(
+        `Failed to get coordinates: ${response.data.error_message}`,
+      );
       switch (response.data.status) {
         case 'ZERO_RESULTS':
           return Result.fail(new AddressNotFoundError());

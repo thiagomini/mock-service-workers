@@ -1,4 +1,10 @@
-import { Controller, Get, NotFoundException, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpException,
+  NotFoundException,
+  Query,
+} from '@nestjs/common';
 import { Coordinates } from './domain/coordinates';
 import {
   AddressService,
@@ -17,8 +23,17 @@ export class AddressController {
       return result.value;
     }
 
-    if (result.error.code === GeoLocationErrorCode.AddressNotFound) {
-      throw new NotFoundException('Address not found');
+    switch (result.error.code) {
+      case GeoLocationErrorCode.AddressNotFound:
+        throw new NotFoundException('Address not found', {
+          cause: result.error,
+        });
+      case GeoLocationErrorCode.InvalidAPIKey:
+        throw new HttpException('Failed to get coordinates', 424, {
+          cause: result.error,
+        });
+      default:
+        throw result.error;
     }
   }
 }

@@ -19,12 +19,19 @@ export type GoogleGeocodeResponse = {
 
 export const GeoLocationErrorCode = {
   AddressNotFound: 'ADDRESS_NOT_FOUND',
+  InvalidAPIKey: 'INVALID_API_KEY',
   UnknownException: 'UNKNOWN',
 } as const;
 
 export class AddressNotFoundError extends ApplicationError {
   constructor() {
     super('Address not found', GeoLocationErrorCode.AddressNotFound);
+  }
+}
+
+export class InvalidAPIKeyError extends ApplicationError {
+  constructor() {
+    super('Failed to get coordinates', GeoLocationErrorCode.InvalidAPIKey);
   }
 }
 
@@ -51,6 +58,8 @@ export class AddressService {
       switch (response.data.status) {
         case 'ZERO_RESULTS':
           return Result.fail(new AddressNotFoundError());
+        case 'REQUEST_DENIED':
+          return Result.fail(new InvalidAPIKeyError());
         default:
           return Result.fail(new UnknownGeolocationError());
       }

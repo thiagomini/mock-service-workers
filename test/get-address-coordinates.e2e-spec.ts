@@ -70,9 +70,23 @@ describe('Get GeoCode Address', () => {
       .expect({
         statusCode: 404,
         message: 'Address not found',
-        error: 'Not Found',
       });
   });
-  it.todo('returns a 424 error (code=01) when there is a network error');
-  it.todo('returns a 424 error (code=02) when the API key is invalid');
+  it('returns a 424 error (code=01) when the API key is invalid', async () => {
+    mockServer.use(
+      stubGoogleAPIResponse({
+        results: [],
+        status: 'REQUEST_DENIED',
+      }),
+    );
+
+    return request(app.getHttpServer())
+      .get('/addresses/geo-code?address=invalid+address')
+      .expect(424)
+      .expect({
+        statusCode: 424,
+        message: 'Failed to get coordinates',
+      });
+  });
+  it.todo('returns a 424 error (code=02) when there is a network error');
 });

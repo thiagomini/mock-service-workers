@@ -8,6 +8,12 @@ export class AddressController {
 
   @Get('geo-code')
   async getGeoCode(@Query('address') address: string): Promise<Coordinates> {
-    return this.addressService.getGeoCode(address);
+    const result = await this.addressService.getGeoCode(address);
+
+    if (result.isOk()) {
+      return result.value;
+    }
+
+    throw result.error;
   }
 }

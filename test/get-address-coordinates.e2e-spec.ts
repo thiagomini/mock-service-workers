@@ -41,6 +41,7 @@ describe('Get GeoCode Address', () => {
             },
           },
         ],
+        status: 'OK',
       }),
     );
 

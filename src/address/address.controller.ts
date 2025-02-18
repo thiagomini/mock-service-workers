@@ -40,6 +40,18 @@ export class AddressController {
             cause: result.error,
           },
         );
+      case GeoLocationErrorCode.NetworkException:
+        throw new HttpException(
+          {
+            statusCode: 424,
+            message: result.error.message,
+            code: '02',
+          },
+          424,
+          {
+            cause: result.error,
+          },
+        );
       default:
         throw result.error;
     }

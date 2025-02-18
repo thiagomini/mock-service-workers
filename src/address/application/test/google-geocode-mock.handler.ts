@@ -1,8 +1,10 @@
 import { http, HttpResponse } from 'msw';
 import { GoogleGeocodeResponse } from '../address.service';
 
-export function stubGoogleAPIResponse(response: GoogleGeocodeResponse) {
+export function stubGoogleAPIResponse(
+  response: GoogleGeocodeResponse | Response,
+) {
   return http.get('https://maps.googleapis.com/maps/api/geocode/json', () =>
-    HttpResponse.json(response),
+    response instanceof Response ? response : HttpResponse.json(response),
   );
 }

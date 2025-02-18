@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { HttpResponse } from 'msw';
 import { setupServer, SetupServerApi } from 'msw/node';
 import * as request from 'supertest';
 import { stubGoogleAPIResponse } from '../src/address/application/test/google-geocode-mock.handler';
@@ -90,5 +91,16 @@ describe('Get GeoCode Address', () => {
         code: '01',
       });
   });
-  it.todo('returns a 424 error (code=02) when there is a network error');
+  it('returns a 424 error (code=02) when there is a network error', async () => {
+    mockServer.use(stubGoogleAPIResponse(HttpResponse.error()));
+
+    return request(app.getHttpServer())
+      .get('/addresses/geo-code?address=invalid+address')
+      .expect(424)
+      .expect({
+        statusCode: 424,
+        message: 'Failed to get coordinates',
+        code: '02',
+      });
+  });
 });

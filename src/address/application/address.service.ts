@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Coordinates } from '../domain/coordinates';
 import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
+import { catchError, firstValueFrom, map, of } from 'rxjs';
 import { Result } from '../../common/result';
 import { ApplicationError } from '../../common/application.error';
+import { AxiosError } from 'axios';
 
 export type GoogleGeocodeResponse = {
   results: {
@@ -22,6 +23,7 @@ export const GeoLocationErrorCode = {
   AddressNotFound: 'ADDRESS_NOT_FOUND',
   InvalidAPIKey: 'INVALID_API_KEY',
   UnknownException: 'UNKNOWN',
+  NetworkException: 'NETWORK',
 } as const;
 
 export class AddressNotFoundError extends ApplicationError {
@@ -33,6 +35,12 @@ export class AddressNotFoundError extends ApplicationError {
 export class InvalidAPIKeyError extends ApplicationError {
   constructor() {
     super('Failed to get coordinates', GeoLocationErrorCode.InvalidAPIKey);
+  }
+}
+
+export class GeoLocationNetworkError extends ApplicationError {
+  constructor() {
+    super('Failed to get coordinates', GeoLocationErrorCode.NetworkException);
   }
 }
 
@@ -49,18 +57,41 @@ export class AddressService {
 
   async getGeoCode(
     address: string,
-  ): Promise<Result<Coordinates, ApplicationError>> {
+  ): Promise<Result<Coordinates, ApplicationError | AxiosError>> {
     const response = await firstValueFrom(
-      this.httpService.get<GoogleGeocodeResponse>(
-        `https://maps.googleapis.com/maps/api/geocode/json?key-test&address=${address}`,
-      ),
+      this.httpService
+        .get<GoogleGeocodeResponse>(
+          `https://maps.googleapis.com/maps/api/geocode/json?key-test&address=${address}`,
+        )
+        .pipe(
+          catchError((error: AxiosError) => {
+            if (error.response) {
+              return of(error);
+            }
+
+            if (error.request) {
+              return of(new GeoLocationNetworkError());
+            }
+
+            return of(new UnknownGeolocationError());
+          }),
+          map((value) => {
+            return value instanceof Error
+              ? Result.fail(value)
+              : Result.ok(value);
+          }),
+        ),
     );
 
-    if (response.data.status !== 'OK') {
-      this.logger.error(
-        `Failed to get coordinates: ${response.data.error_message}`,
-      );
-      switch (response.data.status) {
+    if (response.isError()) {
+      return response;
+    }
+
+    const data = response.unwrap().data;
+
+    if (data.status !== 'OK') {
+      this.logger.error(`Failed to get coordinates: ${data.error_message}`);
+      switch (data.status) {
         case 'ZERO_RESULTS':
           return Result.fail(new AddressNotFoundError());
         case 'REQUEST_DENIED':
@@ -70,7 +101,7 @@ export class AddressService {
       }
     }
 
-    const { lat, lng } = response.data.results[0].geometry.location;
+    const { lat, lng } = data.results[0].geometry.location;
 
     return Result.ok(new Coordinates(lat, lng));
   }

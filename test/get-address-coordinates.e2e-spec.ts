@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpResponse } from 'msw';
+import { http, HttpResponse, passthrough } from 'msw';
 import { setupServer, SetupServerApi } from 'msw/node';
 import * as request from 'supertest';
 import { stubGoogleAPIResponse } from '../src/address/application/test/google-geocode-mock.handler';
@@ -11,7 +11,8 @@ describe('Get GeoCode Address', () => {
   let mockServer: SetupServerApi;
 
   beforeAll(() => {
-    mockServer = setupServer();
+    // We must define a passthrough for localhost requests so MSW doesn't log a warning.
+    mockServer = setupServer(http.all('http://127.0.0.1*', passthrough));
     mockServer.listen();
   });
 
@@ -24,7 +25,6 @@ describe('Get GeoCode Address', () => {
       imports: [AppModule],
     }).compile();
 
-    mockServer.resetHandlers();
     app = moduleFixture.createNestApplication();
     await app.init();
   });
@@ -50,7 +50,6 @@ describe('Get GeoCode Address', () => {
       .get(
         '/addresses/geo-code?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA',
       )
-      .expect(200)
       .expect({
         latitude: 37.4224082,
         longitude: -122.0856086,

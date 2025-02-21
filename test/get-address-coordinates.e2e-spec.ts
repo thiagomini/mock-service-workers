@@ -29,7 +29,7 @@ describe('Get GeoCode Address', () => {
     await app.init();
   });
 
-  it('returns the latitude/longitude for a given address', () => {
+  it('returns the coordinates for a valid address', () => {
     mockServer.use(
       stubGoogleAPIResponse({
         results: [

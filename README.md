@@ -9,16 +9,25 @@ It uses [Mock Service Worker](https://mswjs.io/docs/) library to intercept outgo
 This project implements an example feature used to retrieve the Coordinates of a given existing address utilizing Google's [Geocode API](https://developers.google.com/maps/documentation/geocoding/overview):
 
 ```gherkin
-Feature: Visualize address coordinates
+Feature: As a user I want to be able to see an address' location on the map.
 
   A user can enter an address to view their location on the map. The system
   returns either the coordinates of that address or an error when not found.
 
-  Scenario 1: An address' coordinates are successfully retrieved
+  Scenario: Successfully retrieve address coordinates
+    Given the address '1600 Amphitheatre Parkway, Mountain View, CA' is valid with coordinates 37.4224082, -122.0856086
+    When I search for that location's address
+    Then I can see the PIN on the map at the specified location.
 
-  Scenario 2: Coordinates for given address are not found
+  Scenario: Handle non-existent address
+    Given the address 'Invalid Address' is invalid
+    When I search that location's address
+    Then I receive an error message: 'Address not found'
 
-  Scenario 3: An unexpected network error prevented retrieving the coordinates
+  Scenario: Handle network error during coordinate retrieval
+    Given a network error occurs
+    When I search for the address 'Some Address'
+    Then I see the error message: 'Failed to get coordinates'
 
 ```
 

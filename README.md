@@ -17,7 +17,7 @@ Feature: As a user I want to be able to see an address' location on the map.
   Scenario: Successfully retrieve address coordinates
     Given the address '1600 Amphitheatre Parkway, Mountain View, CA' is valid with coordinates 37.4224082, -122.0856086
     When I search for that location's address
-    Then I can see the PIN on the map at the specified location.
+    Then I can see the address'coordinates
 
   Scenario: Handle non-existent address
     Given the address 'Invalid Address' is invalid

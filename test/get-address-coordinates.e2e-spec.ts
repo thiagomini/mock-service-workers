@@ -5,6 +5,7 @@ import { setupServer, SetupServerApi } from 'msw/node';
 import * as request from 'supertest';
 import { stubGoogleAPIResponse } from '../src/address/application/test/google-geocode-mock.handler';
 import { AppModule } from '../src/app.module';
+import { GeoLocationErrorCode } from '../src/address/application/address.service';
 
 describe('Get GeoCode Address', () => {
   let app: INestApplication;
@@ -100,6 +101,26 @@ describe('Get GeoCode Address', () => {
         statusCode: 424,
         message: 'Failed to get coordinates',
         code: '02',
+      });
+  });
+
+  it('returns a 424 error (code=03) when the request input is invalid', async () => {
+    mockServer.use(
+      stubGoogleAPIResponse({
+        results: [],
+        status: GeoLocationErrorCode.InvalidRequest,
+        error_message:
+          "Invalid request. Missing the 'address', 'components', 'latlng' or 'place_id' parameter.",
+      }),
+    );
+
+    return request(app.getHttpServer())
+      .get('/addresses/geo-code?address=invalid+input')
+      .expect(424)
+      .expect({
+        statusCode: 424,
+        message: 'Failed to get coordinates',
+        code: '03',
       });
   });
 });

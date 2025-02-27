@@ -25,14 +25,14 @@ export class AddressController {
 
     switch (result.error.code) {
       case GeoLocationErrorCode.AddressNotFound:
-        throw new NotFoundException(result.error.message, {
+        throw new NotFoundException('Address not found', {
           cause: result.error,
         });
       case GeoLocationErrorCode.InvalidAPIKey:
         throw new HttpException(
           {
             statusCode: 424,
-            message: result.error.message,
+            message: 'Failed to get coordinates',
             code: '01',
           },
           424,
@@ -44,8 +44,20 @@ export class AddressController {
         throw new HttpException(
           {
             statusCode: 424,
-            message: result.error.message,
+            message: 'Failed to get coordinates',
             code: '02',
+          },
+          424,
+          {
+            cause: result.error,
+          },
+        );
+      case GeoLocationErrorCode.InvalidRequest:
+        throw new HttpException(
+          {
+            statusCode: 424,
+            message: 'Failed to get coordinates',
+            code: '03',
           },
           424,
           {

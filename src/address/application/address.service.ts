@@ -24,6 +24,7 @@ export const GeoLocationErrorCode = {
   InvalidAPIKey: 'INVALID_API_KEY',
   UnknownException: 'UNKNOWN',
   NetworkException: 'NETWORK',
+  InvalidRequest: 'INVALID_REQUEST',
 } as const;
 
 export class AddressNotFoundError extends ApplicationError {
@@ -41,6 +42,12 @@ export class InvalidAPIKeyError extends ApplicationError {
 export class GeoLocationNetworkError extends ApplicationError {
   constructor() {
     super('Failed to get coordinates', GeoLocationErrorCode.NetworkException);
+  }
+}
+
+export class InvalidInputError extends ApplicationError {
+  constructor() {
+    super('Invalid input', GeoLocationErrorCode.InvalidRequest);
   }
 }
 
@@ -96,6 +103,8 @@ export class AddressService {
           return Result.fail(new AddressNotFoundError());
         case 'REQUEST_DENIED':
           return Result.fail(new InvalidAPIKeyError());
+        case 'INVALID_REQUEST':
+          return Result.fail(new InvalidInputError());
         default:
           return Result.fail(new UnknownGeolocationError());
       }

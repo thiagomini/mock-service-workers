@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Coordinates } from '../domain/coordinates';
 import { HttpService } from '@nestjs/axios';
-import { catchError, firstValueFrom, map, of } from 'rxjs';
-import { Result } from '../../common/result';
-import { ApplicationError } from '../../common/application.error';
+import { Injectable, Logger } from '@nestjs/common';
 import { AxiosError } from 'axios';
+import { catchError, firstValueFrom, of } from 'rxjs';
+import { ApplicationError } from '../../common/application.error';
+import { Result } from '../../common/result';
+import { Coordinates } from '../domain/coordinates';
 
 export type GoogleGeocodeResponse = {
   results: {
@@ -82,19 +82,14 @@ export class AddressService {
 
             return of(new UnknownGeolocationError());
           }),
-          map((value) => {
-            return value instanceof Error
-              ? Result.fail(value)
-              : Result.ok(value);
-          }),
         ),
     );
 
-    if (response.isError()) {
-      return response;
+    if (response instanceof Error) {
+      return Result.fail(response);
     }
 
-    const data = response.unwrap().data;
+    const data = response.data;
 
     if (data.status !== 'OK') {
       this.logger.error(`Failed to get coordinates: ${data.error_message}`);

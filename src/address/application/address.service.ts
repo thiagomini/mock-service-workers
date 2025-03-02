@@ -68,7 +68,7 @@ export class AddressService {
     const response = await firstValueFrom(
       this.httpService
         .get<GoogleGeocodeResponse>(
-          `https://maps.googleapis.com/maps/api/geocode/json?key-test&address=${address}`,
+          `https://maps.googleapis.com/maps/api/geocode/json?key=test&address=${address}`,
         )
         .pipe(
           catchError((error: AxiosError) => {

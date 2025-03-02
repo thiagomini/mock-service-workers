@@ -48,9 +48,7 @@ describe('Get GeoCode Address', () => {
     );
 
     return request(app.getHttpServer())
-      .get(
-        '/addresses/geo-code?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA',
-      )
+      .get('/addresses/geo-code?address=Germany')
       .expect({
         latitude: 37.4224082,
         longitude: -122.0856086,
